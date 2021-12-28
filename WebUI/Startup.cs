@@ -19,7 +19,7 @@ public class Startup
 
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseMySql(
-                Configuration.GetConnectionString("MySql"),
+                Configuration.GetConnectionString("MySqlServer"),
                 new MySqlServerVersion(new Version(8, 0, 27))));
 
         services.AddSwaggerGen(opt =>
@@ -36,7 +36,10 @@ public class Startup
 
         app.UseSwagger();
         app.UseSwaggerUI(c =>
-            c.SwaggerEndpoint("/swagger/v1/swagger.json", "Tele2 Test Task v1"));
+        {
+            c.SwaggerEndpoint("/swagger/v1/swagger.json", "Tele2 Test Task v1");
+            c.RoutePrefix = string.Empty;
+        });
 
         app.UseHttpsRedirection();
         app.UseRouting();
