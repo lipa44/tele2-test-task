@@ -6,17 +6,17 @@ using Dto;
 public static class CitizenExtension
 {
     public static CitizenDto ToDto(this Citizen citizen)
-        => new CitizenDto(
+        => new (
             citizen.Id,
             citizen.Name,
             citizen.Surname,
-            citizen.Gender.ToString());
+            citizen.Sex.ToString());
 
     public static CitizenFullDto ToFullDto(this Citizen citizen)
-        => new CitizenFullDto(
+        => new (
             citizen.Id,
             citizen.Name,
             citizen.Surname,
             citizen.Age,
-            citizen.Gender.ToString());
+            citizen.Sex.ToString());
 }

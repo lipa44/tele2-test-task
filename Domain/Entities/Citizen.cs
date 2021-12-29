@@ -1,12 +1,11 @@
-using Domain.Exceptions;
-
 namespace Domain.Entities;
 
+using Exceptions;
 using Enums;
 
 public class Citizen
 {
-    public Citizen(Guid id, string name, string surname, uint age, CitizenGender gender)
+    public Citizen(Guid id, string name, string surname, uint age, CitizenSex sex)
     {
         if (string.IsNullOrWhiteSpace(name))
             throw new Tele2Exception("Citizen name can't be empty");
@@ -21,12 +20,21 @@ public class Citizen
         Name = name;
         Surname = surname;
         Age = age;
-        Gender = gender;
+        Sex = sex;
     }
 
     public Guid Id { get; init; }
     public string Name { get; init; }
     public string Surname { get; init; }
-    public uint Age { get; init; }
-    public CitizenGender Gender { get; init; }
+    public uint Age { get; private set; }
+    public CitizenSex Sex { get; init; }
+
+    public override bool Equals(object? obj) => Equals(obj as Citizen);
+    public override int GetHashCode() => HashCode.Combine(Id, Sex, Name, Surname);
+
+    private bool Equals(Citizen? employee) => employee is not null && employee.Id == Id
+                                                                   && employee.Name == Name
+                                                                   && employee.Surname == Surname
+                                                                   && employee.Sex == Sex
+                                                                   && employee.Age == Age;
 }

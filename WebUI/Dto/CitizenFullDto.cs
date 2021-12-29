@@ -5,4 +5,4 @@ public record CitizenFullDto(
     string Name,
     string Surname,
     uint Age,
-    string Gender);
+    string Sex);

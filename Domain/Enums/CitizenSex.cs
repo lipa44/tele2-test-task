@@ -1,6 +1,6 @@
 namespace Domain.Enums;
 
-public enum CitizenGender
+public enum CitizenSex
 {
     Male = 1,
     Female,
