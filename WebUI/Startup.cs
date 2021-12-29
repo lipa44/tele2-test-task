@@ -25,9 +25,7 @@ public class Startup
         services.AddSwaggerGen(opt =>
             opt.SwaggerDoc("v1", new OpenApiInfo { Title = "Tele2 Test Task", Version = "v1" }));
 
-        services.AddScoped<ICitizenService, CitizenService>();
-
-        // services.AddAutoMapper(typeof(Startup));
+        services.AddScoped<ICitizenService, CitizensService>();
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
