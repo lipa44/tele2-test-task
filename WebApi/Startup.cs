@@ -1,11 +1,11 @@
-namespace WebUI;
+namespace WebApi;
 
 using DataAccess;
 using Infrastructure.Interfaces;
 using Infrastructure.Services;
-using Middlewares;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using Middlewares;
 
 public class Startup
 {

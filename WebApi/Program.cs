@@ -1,4 +1,4 @@
-namespace WebUI;
+namespace WebApi;
 
 public static class Program
 {

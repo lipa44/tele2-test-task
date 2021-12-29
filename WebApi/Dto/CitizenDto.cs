@@ -1,8 +1,7 @@
-namespace WebUI.Dto;
+namespace WebApi.Dto;
 
-public record CitizenFullDto(
+public record CitizenDto(
     Guid Id,
     string Name,
     string Surname,
-    uint Age,
     string Sex);

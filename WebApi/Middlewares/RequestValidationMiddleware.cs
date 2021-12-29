@@ -1,4 +1,4 @@
-namespace WebUI.Middlewares;
+namespace WebApi.Middlewares;
 
 public class RequestValidationMiddleware
 {

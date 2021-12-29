@@ -1,12 +1,12 @@
-namespace WebUI.Controllers;
+namespace WebApi.Controllers;
 
-using Extensions.CitizensFilters;
-using Filters;
 using Domain.Enums;
-using Dto;
-using Extensions;
 using Infrastructure.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Dto;
+using Extensions;
+using Extensions.CitizensFilters;
+using Filters;
 using Models;
 
 [Route("api/[controller]")]

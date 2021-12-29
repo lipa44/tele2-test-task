@@ -1,4 +1,4 @@
-namespace WebUI.Filters;
+namespace WebApi.Filters;
 
 using Domain.Exceptions;
 

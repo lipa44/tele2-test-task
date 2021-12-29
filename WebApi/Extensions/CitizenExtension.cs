@@ -1,4 +1,4 @@
-namespace WebUI.Extensions;
+namespace WebApi.Extensions;
 
 using Domain.Entities;
 using Dto;

@@ -1,4 +1,4 @@
-namespace WebUI.Models;
+namespace WebApi.Models;
 
 public record PageViewModel
 {

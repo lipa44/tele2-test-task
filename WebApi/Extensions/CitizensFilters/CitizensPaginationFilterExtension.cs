@@ -1,4 +1,4 @@
-namespace WebUI.Extensions.CitizensFilters;
+namespace WebApi.Extensions.CitizensFilters;
 
 using Domain.Entities;
 using Filters;
