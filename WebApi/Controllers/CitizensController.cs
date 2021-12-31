@@ -19,7 +19,8 @@ public class CitizensController : ControllerBase
         => _citizenService = citizenService;
 
     [HttpGet]
-    public async Task<OkObjectResult> GetCitizens(
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<ActionResult<IndexViewModel>> GetCitizens(
         [FromQuery] CitizenSex? citizenSex,
         [FromQuery] int ageRangeStart,
         [FromQuery] int ageRangeEnd,
@@ -41,7 +42,15 @@ public class CitizensController : ControllerBase
     }
 
     [HttpGet("{citizenId}")]
-    public async Task<ActionResult<IReadOnlyCollection<CitizenFullDto>>> GetCitizenById(
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<CitizenFullDto>> GetCitizenById(
         [FromRoute] Guid citizenId)
-        => Ok((await _citizenService.GetCitizenByIdAsync(citizenId)).ToFullDto());
+    {
+        var citizen = await _citizenService.FindCitizenByIdAsync(citizenId);
+
+        if (citizen is null) return NotFound();
+
+        return Ok(citizen.ToFullDto());
+    }
 }

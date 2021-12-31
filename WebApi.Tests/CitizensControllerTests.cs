@@ -1,19 +1,18 @@
+namespace WebUI.Tests;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Domain.Entities;
 using Domain.Enums;
 using Infrastructure.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using WebApi.Controllers;
+using WebApi.Dto;
 using WebApi.Extensions;
 using WebApi.Filters;
 using WebApi.Models;
-
-namespace WebUI.Tests;
-
 using NUnit.Framework;
 
 public class CitizensControllerTests
@@ -21,20 +20,38 @@ public class CitizensControllerTests
     private static Mock<ICitizenService> _mock;
     private static CitizensController _controller;
     private static List<Citizen> _testCitizens;
+    private static List<Guid> _citizensId;
+
+    [OneTimeSetUp]
+    public void OneTimeCitizenIdsSetUp()
+    {
+        _citizensId = new ()
+        {
+            new ("07951fc8-024e-4207-af06-33213d7155d1"),
+            new ("35288b36-3e50-407a-a512-f5164f4be739"),
+            new ("c18b57ac-bf6b-4f8b-a3ba-61c6c8dcde2f"),
+            new ("d531e14d-6bfd-444a-b1b2-a22e0888af56"),
+        };
+    }
 
     [SetUp]
-    public void SetUp()
+    public void ControllerSetUp()
     {
-        _testCitizens = new()
+        _mock = new Mock<ICitizenService>();
+
+        _testCitizens = new ()
         {
-            new (new Guid("07951fc8-024e-4207-af06-33213d7155d1"), "Misha", "Libchenko", 19, CitizenSex.Male),
-            new (new Guid("35288b36-3e50-407a-a512-f5164f4be739"), "Stan", "Smith", 27, CitizenSex.Male),
-            new (new Guid("c18b57ac-bf6b-4f8b-a3ba-61c6c8dcde2f"), "Jack", "Anderson", 44, CitizenSex.Male),
-            new (new Guid("d531e14d-6bfd-444a-b1b2-a22e0888af56"), "Olga", "Popova", 24, CitizenSex.Female),
+            new (_citizensId[0], "Misha", "Libchenko", 19, CitizenSex.Male),
+            new (_citizensId[1], "Stan", "Smith", 27, CitizenSex.Male),
+            new (_citizensId[2], "Jack", "Anderson", 44, CitizenSex.Male),
+            new (_citizensId[3], "Olga", "Popova", 24, CitizenSex.Female),
         };
 
-        _mock = new Mock<ICitizenService>();
         _mock.Setup(service => service.GetCitizensAsync()).ReturnsAsync(_testCitizens);
+
+        _testCitizens.ForEach(citizen =>
+            _mock.Setup(service => service.FindCitizenByIdAsync(citizen.Id)).ReturnsAsync(citizen));
+
         _controller = new (_mock.Object);
     }
 
@@ -42,19 +59,23 @@ public class CitizensControllerTests
     public void GetCitizens_ReturnsAResultWithRightListOfCitizens()
     {
         // Act
-        Task<OkObjectResult> controllerResponse
+        var controllerResponse
             = _controller.GetCitizens(null, 0, 0, 0, 0);
 
-        IndexViewModel? responseValue = controllerResponse.Result.Value as IndexViewModel;
-
         // Assert
-        Assert.IsNotNull(responseValue);
-        Assert.IsInstanceOf(typeof(IndexViewModel), responseValue);
+        Assert.IsNotNull(controllerResponse);
+        Assert.IsNotNull(controllerResponse.Result);
+        var responseActionResult = controllerResponse.Result;
 
-        Assert.DoesNotThrow(() => responseValue!.Citizens.ToList());
+        Assert.IsAssignableFrom(typeof(OkObjectResult), responseActionResult.Result);
+        var responseObjectResult = responseActionResult.Result as OkObjectResult;
 
-        var returnedCitizens = responseValue!.Citizens.ToList();
-        Assert.IsNotNull(returnedCitizens);
+        Assert.IsAssignableFrom(typeof(IndexViewModel), responseObjectResult?.Value);
+        Assert.AreEqual(200, responseObjectResult?.StatusCode);
+        var responseViewModel = responseObjectResult?.Value as IndexViewModel;
+
+        Assert.IsNotNull(responseViewModel?.Citizens);
+        var returnedCitizens = responseViewModel!.Citizens.ToList();
 
         Assert.AreEqual(_testCitizens.Count, returnedCitizens.Count);
         Assert.AreEqual(_testCitizens.Select(c => c.ToDto()), returnedCitizens);
@@ -65,19 +86,23 @@ public class CitizensControllerTests
     public void GetCitizensBySex_ReturnsResultWithRightListOfCitizens(CitizenSex citizenSexToTest)
     {
         // Act
-        Task<OkObjectResult> controllerResponse
+        var controllerResponse
             = _controller.GetCitizens(citizenSexToTest, 0, 0, 0, 0);
 
-        IndexViewModel? responseValue = controllerResponse.Result.Value as IndexViewModel;
-
         // Assert
-        Assert.IsNotNull(responseValue);
-        Assert.IsInstanceOf(typeof(IndexViewModel), responseValue);
+        Assert.IsNotNull(controllerResponse);
+        Assert.IsNotNull(controllerResponse.Result);
+        var responseActionResult = controllerResponse.Result;
 
-        Assert.DoesNotThrow(() => responseValue!.Citizens.ToList());
+        Assert.IsAssignableFrom(typeof(OkObjectResult), responseActionResult.Result);
+        var responseObjectResult = responseActionResult.Result as OkObjectResult;
 
-        var returnedCitizens = responseValue!.Citizens.ToList();
-        Assert.IsNotNull(returnedCitizens);
+        Assert.IsAssignableFrom(typeof(IndexViewModel), responseObjectResult?.Value);
+        Assert.AreEqual(200, responseObjectResult?.StatusCode);
+        var responseViewModel = responseObjectResult?.Value as IndexViewModel;
+
+        Assert.IsNotNull(responseViewModel?.Citizens);
+        var returnedCitizens = responseViewModel!.Citizens.ToList();
 
         var citizensBySexCount = returnedCitizens.Count(c => c.Sex == citizenSexToTest.ToString());
         Assert.AreEqual(citizensBySexCount, returnedCitizens.Count);
@@ -102,23 +127,27 @@ public class CitizensControllerTests
         int pageNumber)
     {
         // Act
-        Task<OkObjectResult> controllerResponse
+        var controllerResponse
             = _controller.GetCitizens(null, ageRangeStart, ageRangeEnd, takeAmount, pageNumber);
-
-        IndexViewModel? responseValue = controllerResponse.Result.Value as IndexViewModel;
-        List<Citizen> testCitizens = _testCitizens;
         
+        var testCitizens = _testCitizens.Select(c => c).ToList();
         AgeRangeFilter ageFilter = new (ageRangeStart, ageRangeEnd);
         PaginationFilter paginationFilter = new (takeAmount, pageNumber);
 
         // Assert
-        Assert.IsNotNull(responseValue);
-        Assert.IsInstanceOf(typeof(IndexViewModel), responseValue);
+        Assert.IsNotNull(controllerResponse);
+        Assert.IsNotNull(controllerResponse.Result);
+        var responseActionResult = controllerResponse.Result;
 
-        Assert.DoesNotThrow(() => responseValue!.Citizens.ToList());
+        Assert.IsAssignableFrom(typeof(OkObjectResult), responseActionResult.Result);
+        var responseObjectResult = responseActionResult.Result as OkObjectResult;
 
-        var returnedCitizens = responseValue!.Citizens.ToList();
-        Assert.IsNotNull(returnedCitizens);
+        Assert.IsAssignableFrom(typeof(IndexViewModel), responseObjectResult?.Value);
+        Assert.AreEqual(200, responseObjectResult?.StatusCode);
+        var responseViewModel = responseObjectResult?.Value as IndexViewModel;
+
+        Assert.IsNotNull(responseViewModel?.Citizens);
+        var returnedCitizens = responseViewModel!.Citizens.ToList();
 
         var deletedByAgeCitizens = testCitizens
             .Where(c => c.Age < ageFilter.Start || c.Age > ageFilter.End).ToList();
@@ -134,5 +163,55 @@ public class CitizensControllerTests
 
         Assert.AreEqual(expectedCitizens.Count, returnedCitizens.Count);
         Assert.AreEqual(expectedCitizens, returnedCitizens);
+    }
+
+    [Test]
+    public void GetCitizensByExistingId_EachCitizenFound()
+    {
+        // Act
+        var controllerResponses = 
+            _citizensId.Select(id => _controller.GetCitizenById(id)).ToList();
+        
+        controllerResponses.ForEach(controllerResponse =>
+        {
+            Assert.IsNotNull(controllerResponse);
+            Assert.IsNotNull(controllerResponse.Result);
+            var responseActionResult = controllerResponse.Result;
+
+            Assert.IsAssignableFrom(typeof(OkObjectResult), responseActionResult.Result);
+            var responseObjectResult = responseActionResult.Result as OkObjectResult;
+
+            Assert.IsAssignableFrom(typeof(CitizenFullDto), responseObjectResult?.Value);
+            Assert.AreEqual(200, responseObjectResult?.StatusCode);
+            var responseCitizenFullDto = responseObjectResult!.Value as CitizenFullDto;
+            
+            var testCitizensFullDto = _testCitizens.Select(c => c.ToFullDto());
+            Assert.IsTrue(testCitizensFullDto.Any(c => c == responseCitizenFullDto));
+        });
+    }
+
+    [TestCase(1)]
+    [TestCase(5)]
+    [TestCase(10)]
+    public void GetCitizensByNotExistingId_EachCitizenNotFound(int amountOfIds)
+    {
+        var notExistingIds = new List<Guid>();
+        for (var i = 0; i < amountOfIds; ++i) notExistingIds.Add(Guid.NewGuid());
+
+        // Act
+        var controllerResponses = 
+            notExistingIds.Select(id => _controller.GetCitizenById(id)).ToList();
+
+        controllerResponses.ForEach(controllerResponse =>
+        {
+            Assert.IsNotNull(controllerResponse);
+            Assert.IsNotNull(controllerResponse.Result);
+            var responseActionResult = controllerResponse.Result;
+
+            Assert.IsAssignableFrom(typeof(NotFoundResult), responseActionResult.Result);
+            var responseResult = responseActionResult.Result as NotFoundResult;
+
+            Assert.AreEqual(404, responseResult!.StatusCode);
+        });
     }
 }
