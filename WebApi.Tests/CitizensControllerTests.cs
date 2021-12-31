@@ -1,11 +1,11 @@
 namespace WebUI.Tests;
 
+using Services.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using Domain.Entities;
 using Domain.Enums;
-using Infrastructure.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using WebApi.Controllers;

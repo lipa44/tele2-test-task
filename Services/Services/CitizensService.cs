@@ -1,4 +1,4 @@
-namespace Infrastructure.Services;
+namespace Services.Services;
 
 using DataAccess;
 using Domain.Entities;

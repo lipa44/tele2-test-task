@@ -1,4 +1,4 @@
-namespace Infrastructure.Interfaces;
+namespace Services.Interfaces;
 
 using Domain.Entities;
 

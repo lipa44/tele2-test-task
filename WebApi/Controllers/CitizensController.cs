@@ -1,7 +1,7 @@
 namespace WebApi.Controllers;
 
+using Services.Interfaces;
 using Domain.Enums;
-using Infrastructure.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Dto;
 using Extensions;
